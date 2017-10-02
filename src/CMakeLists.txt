@@ -6,7 +6,8 @@
 SET(2DPMEEXE 2dpme.exe)
 
 # Add the source files
-SET(2DPME_Sources ${SRC}/main.f90)
+SET(2DPME_Sources ${SRC}/main.f90
+                  ${SRC}/library.f90)
 
 # Define the executable in terms of the source files
 ADD_EXECUTABLE(${2DPMEEXE} ${2DPME_Sources})

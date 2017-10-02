@@ -32,6 +32,7 @@
 *.app
 
 *~
+*.m
 
 # CMake
 CMakeCache.txt

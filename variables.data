@@ -1,0 +1,10 @@
+        20                 N
+        20                 M
+        1.0d0              Q
+        5.0d0              initial time
+        1                  power m in pme
+        10.0d0             output time
+        1                  [1] use mesh [2] read in mesh
+        3                  no. of output times
+        13                 order numerical quadrature, 6 or 13   
+        'triangx(adapted)' filename of mesh data file
