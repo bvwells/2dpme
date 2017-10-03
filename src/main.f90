@@ -135,14 +135,8 @@ program PME
       end do
 
       ! write the solution variables to file
-      open (unit=60, file='variables.m')
-      write (60, *) mpower
-      write (60, *) rzero
-      write (60, *) tzero
-      write (60, *) t_init
-      write (60, *) output_t
-      write (60, *) reports
-      close (60)
+      call write_variables(mpower, rzero, tzero, t_init, output_t, reports)
+
    endif
 
    call max_no_of_tris(tri, nodes, no_of_tris, max_tris)
@@ -194,13 +188,10 @@ program PME
       endif
    end do
 
-   open (unit=50, file='triangles.m')
-   do i = 1, no_of_tris
-      write (50, *) tri(i, :)
-   end do
-   close (50)
+   ! Write out the triangles in the mesh.
+   call write_mesh(tri, no_of_tris)
 
-   ! Stop the timing
+   ! Stop the timing.
    call system_clock(System_Time_Stop)
    call cpu_time(CPU_Time_Stop)
 
@@ -327,15 +318,9 @@ subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris
          tri(i, 3) = tri(i, 3) - M*N
       endif
    end do
-
-   open (unit=60, file='variables.m')
-   write (60, *) mpower
-   write (60, *) rzero
-   write (60, *) tzero
-   write (60, *) t_init
-   write (60, *) output_t
-   write (60, *) reports
-   close (60)
+   
+   ! write the solution variables to file
+   call write_variables(mpower, rzero, tzero, t_init, output_t, reports)
 
    return
 
@@ -561,13 +546,12 @@ subroutine adaptive_timestep(u, m, delta_t, t, nodes, no_of_tris, jac)
 end subroutine adaptive_timestep
 
 subroutine write_solution(u, x, y, nodes, reportid) 
-
    use precision
 
    implicit none
 !------------------------------------------------------------------------------
    integer, intent(IN) :: nodes, reportid
-   real(kind=DP), intent(INOUT), dimension(1:nodes) :: u, x, y
+   real(kind=DP), intent(IN), dimension(1:nodes) :: u, x, y
 !------------------------------------------------------------------------------
    character(LEN=10) :: numbers
    integer :: test_number, hundreds, tens, units
@@ -591,3 +575,41 @@ subroutine write_solution(u, x, y, nodes, reportid)
    close (100)
 
 end subroutine write_solution
+
+subroutine write_variables(mpower, rzero, tzero, t_init, output_t, reports)
+   use precision
+
+   implicit none
+!------------------------------------------------------------------------------
+   real(kind=DP), intent(IN) :: mpower, rzero, tzero, t_init, output_t
+   integer, intent(IN) :: reports
+!------------------------------------------------------------------------------
+
+   ! write the solution variables to file
+   open (unit=10, file='variables.m')
+   write (10, *) mpower
+   write (10, *) rzero
+   write (10, *) tzero
+   write (10, *) t_init
+   write (10, *) output_t
+   write (10, *) reports
+   close (10)
+end subroutine write_variables
+
+subroutine write_mesh(tri, no_of_tris)
+   use precision
+
+   implicit none
+!------------------------------------------------------------------------------
+   integer, intent(IN) :: no_of_tris
+   integer, intent(IN), dimension(1:no_of_tris, 1:3) :: tri
+!------------------------------------------------------------------------------
+   integer :: i
+!------------------------------------------------------------------------------
+   open (unit=10, file='triangles.m')
+   do i = 1, no_of_tris
+      write (10, *) tri(i, :)
+   end do
+   close (10)
+
+end subroutine write_mesh
