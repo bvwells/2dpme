@@ -38,8 +38,7 @@ program PME
    real(kind=DP), dimension(:, :), allocatable :: mass, ints, coeffs
    real(kind=DP) :: total_t, delta_t, output_t, Q, t_init, mpower
    real(kind=DP) :: report_step, report_time
-   real(kind=DP) :: rzero, lambda, tzero, e, gamman, gammad
-   real(kind=DP) :: error, xpos, ypos
+   real(kind=DP) :: rzero, lambda, tzero, e
    ! Computational timing variables
    integer :: System_Time_Start, System_Time_Stop, System_Time_Rate
    real :: CPU_Time_Start, CPU_Time_Stop
@@ -61,7 +60,6 @@ program PME
    call cpu_time(CPU_Time_Start)
 
    open (unit=10, file='variables.data', status='old', form='formatted')
-
    read (10, *) N
    read (10, *) M
    read (10, *) Q
@@ -72,9 +70,13 @@ program PME
    read (10, *) reports
    read (10, *) order
    read (10, *) meshfile
-
+   close(10)
+   
    allocate (w(1:order), coeffs(1:order, 1:2)); w = 0.0d0; coeffs = 0.0d0; 
    call triquad(w, coeffs, order)
+
+   ! set-up the initial data given by the self-similar solution
+   call calculate_self_similar_parameters(mpower, t_init, Q, rzero, tzero, lambda)
 
    if (mesh == 1) then
       nodes = N*M + 1; no_of_tris = M*(2*N - 1)
@@ -89,7 +91,8 @@ program PME
       allocate (jac(1:no_of_tris)); jac = 0
       allocate (ints(1:3, 1:3)); ints = 0
 
-      call initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris, N, M, output_t, reports)
+      call initial_conditions(u, x, y, tri, mpower, Q, t_init, &
+         & nodes, no_of_tris, N, M, output_t, reports, rzero, tzero, lambda)
    elseif (mesh == 2) then
 
       open (unit=20, file=meshfile, status='old', form='formatted')
@@ -117,14 +120,6 @@ program PME
       ! sort the boundary node indexes
       call bubble(bdy, nbdy)
 
-      ! set-up the initial data given by the self-similar solution
-      gamman = gamma((1.0d0/mpower) + 2.0d0)
-      gammad = gamma((1.0d0/mpower) + 1.0d0)
-
-      rzero = sqrt(Q*gamman/(SQRT(pi)*gammad))
-      tzero = ((rzero**2)*mpower)/(4.0d0*(mpower + 1.0d0))
-      lambda = (t_init/tzero)**(1/(2.0d0*(mpower + 1.0d0)))
-
       x = rzero*lambda*x
       y = rzero*lambda*y
 
@@ -133,11 +128,10 @@ program PME
          if (e < 0.0d0) e = 0
          u(i) = (1.0d0/lambda**2)*(e**(1.0d0/mpower))
       end do
-
-      ! write the solution variables to file
-      call write_variables(mpower, rzero, tzero, t_init, output_t, reports)
-
    endif
+
+   ! write the solution variables to file
+   call write_variables(mpower, rzero, tzero, t_init, output_t, reports)
 
    call max_no_of_tris(tri, nodes, no_of_tris, max_tris)
    max_tris = max_tris + 1
@@ -208,6 +202,30 @@ program PME
 
 end program PME
 
+
+subroutine calculate_self_similar_parameters(mpower, t_init, Q, rzero, tzero, lambda)
+   use precision
+   use constants
+   use routines
+
+   implicit none
+!------------------------------------------------------------------------------
+   real(kind=DP), intent(IN) :: mpower, t_init, Q
+   real(kind=DP), intent(INOUT) :: rzero, tzero, lambda
+!------------------------------------------------------------------------------
+   real(kind=DP) :: gamman, gammad
+!------------------------------------------------------------------------------
+
+   ! set-up the initial data given by the self-similar solution
+   gamman = gamma((1.0d0/mpower) + 2.0d0)
+   gammad = gamma((1.0d0/mpower) + 1.0d0)
+
+   rzero = sqrt(Q*gamman/(SQRT(pi)*gammad))
+   tzero = ((rzero**2)*mpower)/(4.0d0*(mpower + 1.0d0))
+   lambda = (t_init/tzero)**(1/(2.0d0*(mpower + 1.0d0)))
+
+end subroutine calculate_self_similar_parameters
+
 function exact_solution(x, y, lambda, rzero, m) result(uexact)
 
    use precision
@@ -229,7 +247,7 @@ function exact_solution(x, y, lambda, rzero, m) result(uexact)
 
 end function exact_solution
 
-subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris, N, M, output_t, reports)
+subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris, N, M, output_t, reports, rzero, tzero, lambda)
 
    use precision
    use constants
@@ -240,21 +258,14 @@ subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris
    integer, intent(IN) :: nodes, no_of_tris, N, M, reports
    integer, intent(INOUT), dimension(1:no_of_tris, 1:3) :: tri
    real(kind=DP), intent(INOUT), dimension(1:nodes) :: u, x, y
-   real(kind=DP), intent(IN) :: Q, t_init, mpower, output_t
+   real(kind=DP), intent(IN) :: Q, t_init, mpower, output_t, rzero, tzero, lambda
 !------------------------------------------------------------------------------
    real(kind=DP), dimension(1:N) :: r
    real(kind=DP), dimension(1:M + 1) :: angle
-   real(kind=DP) :: gamman, gammad, rzero, tzero, lambda, delta_x, e
+   real(kind=DP) :: delta_x, e
    integer :: i, j
 !------------------------------------------------------------------------------
    i = 0; j = 0; angle = 0; r = 0; e = 0
-
-   gamman = gamma((1.0d0/mpower) + 2.0d0)
-   gammad = gamma((1.0d0/mpower) + 1.0d0)
-
-   rzero = sqrt(Q*gamman/(SQRT(pi)*gammad))
-   tzero = ((rzero**2)*mpower)/(4.0d0*(mpower + 1.0d0))
-   lambda = (t_init/tzero)**(1/(2.0d0*(mpower + 1.0d0)))
 
    delta_x = rzero*lambda/N
 
@@ -319,9 +330,6 @@ subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris
       endif
    end do
    
-   ! write the solution variables to file
-   call write_variables(mpower, rzero, tzero, t_init, output_t, reports)
-
    return
 
 end subroutine initial_conditions
@@ -567,12 +575,14 @@ subroutine write_solution(u, x, y, nodes, reportid)
    test_number = test_number - 10*tens
    units = test_number
 
-   open (unit=100, file=trim(filename)//numbers(hundreds + 1:hundreds + 1)//numbers(tens + 1:tens + 1)// &
+   open (unit=10, file=trim(filename)//numbers(hundreds + 1:hundreds + 1)//numbers(tens + 1:tens + 1)// &
       &numbers(units + 1:units + 1)//".m")
    do i = 1, nodes
-      write (100, *) x(i), y(i), u(i)
+      write (10, *) x(i), y(i), u(i)
    end do
-   close (100)
+   close (10)
+
+   return
 
 end subroutine write_solution
 
@@ -594,6 +604,9 @@ subroutine write_variables(mpower, rzero, tzero, t_init, output_t, reports)
    write (10, *) output_t
    write (10, *) reports
    close (10)
+
+   return
+
 end subroutine write_variables
 
 subroutine write_mesh(tri, no_of_tris)
@@ -611,5 +624,7 @@ subroutine write_mesh(tri, no_of_tris)
       write (10, *) tri(i, :)
    end do
    close (10)
+
+   return
 
 end subroutine write_mesh
