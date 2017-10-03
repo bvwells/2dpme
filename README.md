@@ -57,10 +57,16 @@ docker run -i -t -v /f/git/src/github.com/bvwells/2dpme:/app 2dpme
 
 This command maps the local workspace into the running image so any changes made in the running image will be reflected on the local workspace.
 
-Within the running image generate the make files by running the command:
+Within the running image generate the make files for the release version by running the command:
 
 ```
 cmake .
+```
+
+To build the debug version of the code run the command:
+
+```
+cmake -DCMAKE_BUILD_TYPE=Debug
 ```
 
 Build the executable by running the command:
