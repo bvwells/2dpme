@@ -44,15 +44,10 @@ program PME
    integer :: System_Time_Start, System_Time_Stop, System_Time_Rate
    real :: CPU_Time_Start, CPU_Time_Stop
    real(kind=DP), external :: exact_solution
-   integer :: i, j, count
+   integer :: i, j, reportid
    character(LEN=32) :: meshfile
    logical :: writesol
-
-   character(LEN=10) :: numbers
-   integer :: test_number, hundreds, tens, units
-   character(LEN=32) :: filename
 !------------------------------------------------------------------------------
-   numbers = "0123456789"; filename = "solution"
 
    ! Print simulator banner.
    write (6, *)
@@ -165,21 +160,9 @@ program PME
    report_time = t_init + report_step
    writesol = .false.
 
-   count = 1; 
-   test_number = count
-   hundreds = test_number/100
-   test_number = test_number - 100*hundreds
-   tens = test_number/10
-   test_number = test_number - 10*tens
-   units = test_number
-
-   open (unit=100, file=trim(filename)//numbers(hundreds + 1:hundreds + 1)//numbers(tens + 1:tens + 1)// &
-      &numbers(units + 1:units + 1)//".m")
-   do i = 1, nodes
-      write (100, *) x(i), y(i), u(i)
-   end do
-   close (100)
-   count = count + 1
+   reportid = 1; 
+   call write_solution(u, x, y, nodes, reportid)
+   reportid = reportid + 1
 
    do while (total_t < output_t)
 
@@ -205,21 +188,8 @@ program PME
       call u_calc(u, x, y, nodes, no_of_tris, max_tris, tri, con, mass, theta, ints, jac, bdy, nbdy)
 
       if (writesol) then
-
-         test_number = count
-         hundreds = test_number/100
-         test_number = test_number - 100*hundreds
-         tens = test_number/10
-         test_number = test_number - 10*tens
-         units = test_number
-
-         open (unit=100, file=trim(filename)//numbers(hundreds + 1:hundreds + 1)//numbers(tens + 1:tens + 1)// &
-            &numbers(units + 1:units + 1)//".m")
-         do i = 1, nodes
-            write (100, *) x(i), y(i), u(i)
-         end do
-         close (100)
-         count = count + 1
+         call write_solution(x, y, u, nodes, reportid)
+         reportid = reportid + 1
          writesol = .false.
       endif
    end do
@@ -589,3 +559,35 @@ subroutine adaptive_timestep(u, m, delta_t, t, nodes, no_of_tris, jac)
    return
 
 end subroutine adaptive_timestep
+
+subroutine write_solution(u, x, y, nodes, reportid) 
+
+   use precision
+
+   implicit none
+!------------------------------------------------------------------------------
+   integer, intent(IN) :: nodes, reportid
+   real(kind=DP), intent(INOUT), dimension(1:nodes) :: u, x, y
+!------------------------------------------------------------------------------
+   character(LEN=10) :: numbers
+   integer :: test_number, hundreds, tens, units
+   integer :: i
+   character(LEN=32) :: filename
+!------------------------------------------------------------------------------
+   numbers = "0123456789"; filename = "solution"
+
+   test_number = reportid
+   hundreds = test_number/100
+   test_number = test_number - 100*hundreds
+   tens = test_number/10
+   test_number = test_number - 10*tens
+   units = test_number
+
+   open (unit=100, file=trim(filename)//numbers(hundreds + 1:hundreds + 1)//numbers(tens + 1:tens + 1)// &
+      &numbers(units + 1:units + 1)//".m")
+   do i = 1, nodes
+      write (100, *) x(i), y(i), u(i)
+   end do
+   close (100)
+
+end subroutine write_solution
