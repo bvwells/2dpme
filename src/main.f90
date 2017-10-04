@@ -124,9 +124,7 @@ program PME
       y = rzero*lambda*y
 
       do i = 1, nodes
-         e = 1.0d0 - ((SQRT((x(i)**2 + y(i)**2))/(rzero*lambda))**2)
-         if (e < 0.0d0) e = 0
-         u(i) = (1.0d0/lambda**2)*(e**(1.0d0/mpower))
+         u(i) = exact_solution(x(i), y(j), lambda, rzero, mpower)
       end do
    endif
 
@@ -148,7 +146,7 @@ program PME
    report_time = t_init + report_step
    writesol = .false.
 
-   reportid = 1; 
+   reportid = 0; 
    call write_solution(u, x, y, nodes, reportid)
    reportid = reportid + 1
 
@@ -214,15 +212,17 @@ subroutine calculate_self_similar_parameters(mpower, t_init, Q, rzero, tzero, la
    real(kind=DP), intent(INOUT) :: rzero, tzero, lambda
 !------------------------------------------------------------------------------
    real(kind=DP) :: gamman, gammad
+   integer :: d
 !------------------------------------------------------------------------------
+   d = 2.0d0
 
    ! set-up the initial data given by the self-similar solution
-   gamman = gamma((1.0d0/mpower) + 2.0d0)
-   gammad = gamma((1.0d0/mpower) + 1.0d0)
+   gamman = gamma((1.0d0/mpower) + (1.0d0/d)+ 1.0d0)
+   gammad = gamma(d/2.0d0) * gamma((1.0d0/mpower) + 1.0d0)
 
-   rzero = sqrt(Q*gamman/(SQRT(pi)*gammad))
-   tzero = ((rzero**2)*mpower)/(4.0d0*(mpower + 1.0d0))
-   lambda = (t_init/tzero)**(1/(2.0d0*(mpower + 1.0d0)))
+   rzero = (Q*gamman/gammad)**(1.0d0/d)
+   tzero = ((rzero**2)*mpower)/(2.0d0*(d*mpower + 2.0d0))
+   lambda = (t_init/tzero)**(1.0d0/(d*mpower + 2.0d0))
 
 end subroutine calculate_self_similar_parameters
 

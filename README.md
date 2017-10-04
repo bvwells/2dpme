@@ -13,16 +13,16 @@ The Porous Medium Equation is described by the non-linear partial differential e
 u_t = ∇.(u^m ∇u)
 ```
 
-and admits self-similar solutions of the form
+and admits radial self-similar solutions of the form
 
 ```
-u(x,t) = (1/lambda^d)*(1-(x/(r0*lambda))^2)^(1/m)
+u(r,t) = (1/lambda^d)*(1-(r/(r0*lambda))^2)^(1/m)
 ```
 
 where
 
 ```
-r0 = Q*gamma(1/m + 1/d + 1)/(gamma(d/2)*gamma(1/m + 1))                   
+r0^d = Q*gamma(1/m + 1/d + 1)/(gamma(d/2)*gamma(1/m + 1))                   
 t0 = ((r0^2)*m)/(2*(d*m+2))                            
 lambda = (t/t0)^(1/(d*m+2)) 
 ```
