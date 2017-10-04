@@ -1,7 +1,8 @@
 # 2dpme
 [![Build Status](https://travis-ci.org/bvwells/2dpme.svg?branch=master)](https://travis-ci.org/bvwells/2dpme)
 
-Two dimensional Porous Medium Equation (PME) solved with a moving mesh approach described in the PhD thesis
+Two dimensional Porous Medium Equation (PME) solved with a moving mesh approach
+described in the PhD thesis
 
 *A moving mesh finite element method for the numerical solution of partial differential equations and systems.*
 
@@ -30,6 +31,7 @@ lambda = (t/t0)^(1/(d*m+2))
 Here ```Q``` is the total mass of the solution ```gamma``` is the gamma function and ```d``` is the dimension of the problem.
 
 ## Numerical Solution
+
 The two-dimensional Porous Medium Equation is solved using a moving mesh 
 method which uses the monitor function ```M=u(x,t)``` in the moving mesh 
 equations for the mesh velocity. The mesh is advanced forwards in time 
@@ -73,5 +75,15 @@ Build the executable by running the command:
 ```
 make
 ```
+
+## Running
+
+The program takes the file [variables.data](./variables.data) as input to the simulation. The program can be run from the base of the repo with the command:
+
+```
+./bin/2dpme.exe
+```
+
+The program outputs the mesh and solution over time into the files ```cells.m``` and ```solution.,``` respectively. The variable for the solution is written to the file ```variables.m```.
 
 [1]: http://www.reading.ac.uk/nmsruntime/saveasdialog.aspx?lID=24080&sID=90294
