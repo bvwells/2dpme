@@ -16,7 +16,7 @@ u_t = ∇.(u^m ∇u)
 and admits self-similar solutions of the form
 
 ```
-u(x,t) = (1/lambda^2)*(1-(x/(r0*lambda))^2)^(1/m)
+u(x,t) = (1/lambda^d)*(1-(x/(r0*lambda))^2)^(1/m)
 ```
 
 where
