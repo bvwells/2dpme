@@ -84,7 +84,7 @@ The program takes the file [variables.data](./variables.data) as input to the si
 ./bin/2dpme.exe
 ```
 
-The program outputs the mesh and solution over time into the files ```cells.m``` and ```solution.,``` respectively. The variable for the solution is written to the file ```variables.m```.
+The program outputs the mesh and solution over time into the files ```cells.m``` and ```solutionXXX.m,``` respectively. The variables for the solution are written to the file ```variables.m```.
 
 ## Plotting Solution
 
