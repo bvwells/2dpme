@@ -10,7 +10,7 @@ which can be found [here][1].
 The Porous Medium Equation is described by the non-linear partial differential equation
 
 ```
-u_t = (u^m u_x)_x
+u_t = ∇.(u^m ∇u)
 ```
 
 and admits self-similar solutions of the form
