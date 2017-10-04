@@ -263,7 +263,8 @@ subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris
    real(kind=DP), dimension(1:N) :: r
    real(kind=DP), dimension(1:M + 1) :: angle
    real(kind=DP) :: delta_x, e
-   integer :: i, j
+   real(kind=DP), external :: exact_solution
+   integer :: i, j, nodeID, triID
 !------------------------------------------------------------------------------
    i = 0; j = 0; angle = 0; r = 0; e = 0
 
@@ -281,11 +282,10 @@ subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris
 
    do i = 1, M
       do j = 1, N
-         x(j + 1 + (i - 1)*N) = r(j)*dcos(angle(i))
-         y(j + 1 + (i - 1)*N) = r(j)*dsin(angle(i))
-         e = 1.0d0 - ((SQRT((x(j + 1 + (i - 1)*N)**2 + y(j + 1 + (i - 1)*N)**2))/(rzero*lambda))**2)
-         if (e < 0.0d0) e = 0
-         u(j + 1 + (i - 1)*N) = (1.0d0/lambda**2)*(e**(1.0d0/mpower))
+         nodeID = j + 1 + (i - 1)*N
+         x(nodeID) = r(j)*dcos(angle(i))
+         y(nodeID) = r(j)*dsin(angle(i))
+         u(nodeID) = exact_solution(x(nodeID), y(nodeID), lambda, rzero, mpower)
       end do
    end do
 
@@ -302,18 +302,25 @@ subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris
    do i = 1, N - 1
       do j = 1, M, 2
          if (j < M) then
-            tri(j + (j - 1) + (2*i - 1)*M, 1) = 1 + (j - 1)*N + i
-            tri(j + (j - 1) + (2*i - 1)*M, 2) = 2 + (j - 1)*N + i
-            tri(j + (j - 1) + (2*i - 1)*M, 3) = 2 + j*N + i
-            tri(j + (j - 1) + 1 + (2*i - 1)*M, 1) = 1 + (j - 1)*N + i
-            tri(j + (j - 1) + 1 + (2*i - 1)*M, 2) = 2 + j*N + i
-            tri(j + (j - 1) + 1 + (2*i - 1)*M, 3) = 1 + j*N + i
-            tri(j + (j - 1) + 2 + (2*i - 1)*M, 1) = 1 + j*N + i
-            tri(j + (j - 1) + 2 + (2*i - 1)*M, 2) = 2 + j*N + i
-            tri(j + (j - 1) + 2 + (2*i - 1)*M, 3) = 1 + (j + 1)*N + i
-            tri(j + (j - 1) + 3 + (2*i - 1)*M, 1) = 1 + (j + 1)*N + i
-            tri(j + (j - 1) + 3 + (2*i - 1)*M, 2) = 2 + j*N + i
-            tri(j + (j - 1) + 3 + (2*i - 1)*M, 3) = 2 + (j + 1)*N + i
+            triID = j + (j - 1) + (2*i - 1)*M
+            tri(triID, 1) = 1 + (j - 1)*N + i
+            tri(triID, 2) = 2 + (j - 1)*N + i
+            tri(triID, 3) = 2 + j*N + i
+
+            triID = j + (j - 1) + 1 + (2*i - 1)*M
+            tri(triID, 1) = 1 + (j - 1)*N + i
+            tri(triID, 2) = 2 + j*N + i
+            tri(triID, 3) = 1 + j*N + i
+
+            triID = j + (j - 1) + 2 + (2*i - 1)*M
+            tri(triID, 1) = 1 + j*N + i
+            tri(triID, 2) = 2 + j*N + i
+            tri(triID, 3) = 1 + (j + 1)*N + i
+
+            triID = j + (j - 1) + 3 + (2*i - 1)*M
+            tri(triID, 1) = 1 + (j + 1)*N + i
+            tri(triID, 2) = 2 + j*N + i
+            tri(triID, 3) = 2 + (j + 1)*N + i
          endif
       end do
    end do
