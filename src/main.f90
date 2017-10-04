@@ -176,7 +176,7 @@ program PME
       call u_calc(u, x, y, nodes, no_of_tris, max_tris, tri, con, mass, theta, ints, jac, bdy, nbdy)
 
       if (writesol) then
-         call write_solution(x, y, u, nodes, reportid)
+         call write_solution(u, x, y, nodes, reportid)
          reportid = reportid + 1
          writesol = .false.
       endif
@@ -619,7 +619,7 @@ subroutine write_mesh(tri, no_of_tris)
 !------------------------------------------------------------------------------
    integer :: i
 !------------------------------------------------------------------------------
-   open (unit=10, file='triangles.m')
+   open (unit=10, file='cells.m')
    do i = 1, no_of_tris
       write (10, *) tri(i, :)
    end do
