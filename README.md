@@ -86,4 +86,9 @@ The program takes the file [variables.data](./variables.data) as input to the si
 
 The program outputs the mesh and solution over time into the files ```cells.m``` and ```solution.,``` respectively. The variable for the solution is written to the file ```variables.m```.
 
+## Plotting Solution
+
+The output from the simulation can be plotted in [Octave](https://www.gnu.org/software/octave/) by running the plotting file
+```plot_solution.m``` in the root of the repo.
+
 [1]: http://www.reading.ac.uk/nmsruntime/saveasdialog.aspx?lID=24080&sID=90294
