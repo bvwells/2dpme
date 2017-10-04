@@ -1,10 +1,8 @@
 program PME
    use precision
-   use constants
    use routines
    use mesh_routines
    use quadrature
-   use basis_functions
    !*********************************************************************************
    !**                                                                             **
    !**     Program to solve the 2-D porous media equation using moving finite      **
@@ -202,9 +200,9 @@ end program PME
 
 
 subroutine calculate_self_similar_parameters(mpower, t_init, Q, rzero, tzero, lambda)
+
    use precision
-   use constants
-   use routines
+   use special_functions
 
    implicit none
 !------------------------------------------------------------------------------
@@ -251,7 +249,6 @@ subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris
 
    use precision
    use constants
-   use routines
 
    implicit none
 !------------------------------------------------------------------------------
@@ -399,7 +396,7 @@ end subroutine mass_setup
 subroutine mesh_movement(u, x, y, x_dot, y_dot, tri, con, mass, nodes, no_of_tris, max_tris, delta_t, mpower, jac, w, coeffs, order)
 
    use precision
-   use matrix_solvers
+   use linear_solvers
    use mesh_routines
    use basis_functions
 
@@ -488,7 +485,7 @@ subroutine u_calc(u, x, y, nodes, no_of_tris, max_tris, tri, con, mass, theta, i
 
    use precision
    use mesh_routines
-   use matrix_solvers
+   use linear_solvers
 
    implicit none
 !------------------------------------------------------------------------------
@@ -535,7 +532,6 @@ end subroutine u_calc
 subroutine adaptive_timestep(u, m, delta_t, t, nodes, no_of_tris, jac)
 
    use precision
-   use mesh_routines
 
    implicit none
 !------------------------------------------------------------------------------
