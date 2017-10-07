@@ -13,7 +13,7 @@ program PME
    !**                                                                             **
    !**             u (solution) - Double precision array                           **
    !**             x (mesh position in x-direction)- Double precision array        **
-   !**             x (mesh position in y-direction)- Double precision array        **
+   !**             y (mesh position in y-direction)- Double precision array        **
    !**             x_dot (mesh velocity in x-direction) - Double precision array   **
    !**             y_dot (mesh velocity in y-direction) - Double precision array   **
    !**                                                                             **
