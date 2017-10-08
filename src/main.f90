@@ -68,8 +68,8 @@ program PME
    read (10, *) reports
    read (10, *) order
    read (10, *) meshfile
-   close(10)
-   
+   close (10)
+
    allocate (w(1:order), coeffs(1:order, 1:2)); w = 0.0d0; coeffs = 0.0d0; 
    call triquad(w, coeffs, order)
 
@@ -78,6 +78,7 @@ program PME
 
    if (mesh == 1) then
       nodes = N*M + 1; no_of_tris = M*(2*N - 1)
+      nbdy = M
 
       allocate (tri(1:no_of_tris, 1:3)); tri = 0
       allocate (u(1:nodes)); u = 0
@@ -88,9 +89,10 @@ program PME
       allocate (theta(1:nodes)); theta = 0
       allocate (jac(1:no_of_tris)); jac = 0
       allocate (ints(1:3, 1:3)); ints = 0
+      allocate (bdy(1:nbdy)); bdy = 0
 
-      call initial_conditions(u, x, y, tri, mpower, Q, t_init, &
-         & nodes, no_of_tris, N, M, output_t, reports, rzero, tzero, lambda)
+      call initial_conditions(u, x, y, tri, bdy, mpower, Q, t_init, &
+         & nodes, no_of_tris, N, M, nbdy, rzero, tzero, lambda)
    elseif (mesh == 2) then
 
       open (unit=20, file=meshfile, status='old', form='formatted')
@@ -198,7 +200,6 @@ program PME
 
 end program PME
 
-
 subroutine calculate_self_similar_parameters(mpower, t_init, Q, rzero, tzero, lambda)
 
    use precision
@@ -215,8 +216,8 @@ subroutine calculate_self_similar_parameters(mpower, t_init, Q, rzero, tzero, la
    d = 2.0d0
 
    ! set-up the initial data given by the self-similar solution
-   gamman = gamma((1.0d0/mpower) + (1.0d0/d)+ 1.0d0)
-   gammad = gamma(d/2.0d0) * gamma((1.0d0/mpower) + 1.0d0)
+   gamman = gamma((1.0d0/mpower) + (1.0d0/d) + 1.0d0)
+   gammad = gamma(d/2.0d0)*gamma((1.0d0/mpower) + 1.0d0)
 
    rzero = (Q*gamman/gammad)**(1.0d0/d)
    tzero = ((rzero**2)*mpower)/(2.0d0*(d*mpower + 2.0d0))
@@ -245,17 +246,18 @@ function exact_solution(x, y, lambda, rzero, m) result(uexact)
 
 end function exact_solution
 
-subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris, N, M, output_t, reports, rzero, tzero, lambda)
+subroutine initial_conditions(u, x, y, tri, bdy, mpower, Q, t_init, nodes, no_of_tris, N, M, nbdy, rzero, tzero, lambda)
 
    use precision
    use constants
 
    implicit none
 !------------------------------------------------------------------------------
-   integer, intent(IN) :: nodes, no_of_tris, N, M, reports
+   integer, intent(IN) :: nodes, no_of_tris, N, M, nbdy
    integer, intent(INOUT), dimension(1:no_of_tris, 1:3) :: tri
+   integer, intent(INOUT), dimension(1:nbdy) :: bdy
    real(kind=DP), intent(INOUT), dimension(1:nodes) :: u, x, y
-   real(kind=DP), intent(IN) :: Q, t_init, mpower, output_t, rzero, tzero, lambda
+   real(kind=DP), intent(IN) :: Q, t_init, mpower, rzero, tzero, lambda
 !------------------------------------------------------------------------------
    real(kind=DP), dimension(1:N) :: r
    real(kind=DP), dimension(1:M + 1) :: angle
@@ -283,6 +285,9 @@ subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris
          x(nodeID) = r(j)*dcos(angle(i))
          y(nodeID) = r(j)*dsin(angle(i))
          u(nodeID) = exact_solution(x(nodeID), y(nodeID), lambda, rzero, mpower)
+         if (j == N) then
+            bdy(i) = nodeID
+         endif
       end do
    end do
 
@@ -333,7 +338,7 @@ subroutine initial_conditions(u, x, y, tri, mpower, Q, t_init, nodes, no_of_tris
          tri(i, 3) = tri(i, 3) - M*N
       endif
    end do
-   
+
    return
 
 end subroutine initial_conditions
@@ -556,7 +561,7 @@ subroutine adaptive_timestep(u, m, delta_t, t, nodes, no_of_tris, jac)
 
 end subroutine adaptive_timestep
 
-subroutine write_solution(u, x, y, nodes, reportid) 
+subroutine write_solution(u, x, y, nodes, reportid)
    use precision
 
    implicit none
