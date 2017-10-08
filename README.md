@@ -91,4 +91,6 @@ The program outputs the mesh and solution over time into the files ```cells.m```
 The output from the simulation can be plotted in [Octave](https://www.gnu.org/software/octave/) by running the plotting file
 [plot_solution.m](./plot_solution.m) in the root of the repo.
 
+![PME solution](./pme.png "PME solution")
+
 [1]: http://www.reading.ac.uk/nmsruntime/saveasdialog.aspx?lID=24080&sID=90294
