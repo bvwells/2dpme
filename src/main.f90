@@ -36,12 +36,12 @@ program PME
    real(kind=DP), dimension(:, :), allocatable :: mass, ints, coeffs
    real(kind=DP) :: total_t, delta_t, output_t, Q, t_init, mpower
    real(kind=DP) :: report_step, report_time
-   real(kind=DP) :: rzero, lambda, tzero, e
+   real(kind=DP) :: rzero, lambda, tzero
    ! Computational timing variables
    integer :: System_Time_Start, System_Time_Stop, System_Time_Rate
    real :: CPU_Time_Start, CPU_Time_Stop
    real(kind=DP), external :: exact_solution
-   integer :: i, j, reportid
+   integer :: i, reportid
    character(LEN=32) :: meshfile
    logical :: writesol
 !------------------------------------------------------------------------------
@@ -91,8 +91,8 @@ program PME
       allocate (ints(1:3, 1:3)); ints = 0
       allocate (bdy(1:nbdy)); bdy = 0
 
-      call initial_conditions(u, x, y, tri, bdy, mpower, Q, t_init, &
-         & nodes, no_of_tris, N, M, nbdy, rzero, tzero, lambda)
+      call initial_conditions(u, x, y, tri, bdy, mpower, &
+         & nodes, no_of_tris, N, M, nbdy, rzero, lambda)
    elseif (mesh == 2) then
 
       open (unit=20, file=meshfile, status='old', form='formatted')
@@ -124,7 +124,7 @@ program PME
       y = rzero*lambda*y
 
       do i = 1, nodes
-         u(i) = exact_solution(x(i), y(j), lambda, rzero, mpower)
+         u(i) = exact_solution(x(i), y(i), lambda, rzero, mpower)
       end do
    endif
 
@@ -246,7 +246,7 @@ function exact_solution(x, y, lambda, rzero, m) result(uexact)
 
 end function exact_solution
 
-subroutine initial_conditions(u, x, y, tri, bdy, mpower, Q, t_init, nodes, no_of_tris, N, M, nbdy, rzero, tzero, lambda)
+subroutine initial_conditions(u, x, y, tri, bdy, mpower, nodes, no_of_tris, N, M, nbdy, rzero, lambda)
 
    use precision
    use constants
@@ -257,7 +257,7 @@ subroutine initial_conditions(u, x, y, tri, bdy, mpower, Q, t_init, nodes, no_of
    integer, intent(INOUT), dimension(1:no_of_tris, 1:3) :: tri
    integer, intent(INOUT), dimension(1:nbdy) :: bdy
    real(kind=DP), intent(INOUT), dimension(1:nodes) :: u, x, y
-   real(kind=DP), intent(IN) :: Q, t_init, mpower, rzero, tzero, lambda
+   real(kind=DP), intent(IN) :: mpower, rzero, lambda
 !------------------------------------------------------------------------------
    real(kind=DP), dimension(1:N) :: r
    real(kind=DP), dimension(1:M + 1) :: angle
